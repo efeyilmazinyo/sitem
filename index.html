@@ -1,13 +1,1464 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice Management System</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --font-size: 16px;
+            --background: #ffffff;
+            --foreground: #000000;
+            --card: #ffffff;
+            --primary: #030213;
+            --primary-foreground: #ffffff;
+            --muted: #ececf0;
+            --muted-foreground: #717182;
+            --border: rgba(0, 0, 0, 0.1);
+            --input-background: #f3f3f5;
+            --radius: 0.625rem;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f9fafb;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #f3f4f6;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: #1a1a2e;
+        }
+
+        .input, .textarea, .select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            background: var(--input-background);
+            font-size: 1rem;
+        }
+
+        .input:focus, .textarea:focus, .select:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .tab-active {
+            background: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .badge-green {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge-orange {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-blue {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .badge-gray {
+            background: #6b7280;
+            color: white;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-cols-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        @media (max-width: 768px) {
+            .grid-cols-2,
+            .grid-cols-3,
+            .grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .separator {
+            height: 1px;
+            background: var(--border);
+            margin: 2rem 0;
+        }
+
+        .space-y-2 > * + * {
+            margin-top: 0.5rem;
+        }
+
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .invoice-item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: var(--radius);
+        }
+
+        @media (max-width: 768px) {
+            .invoice-item-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Name Setup Modal -->
+    <div id="nameSetupModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Welcome to Invoice Management</h2>
+            <p style="color: var(--muted-foreground); margin-bottom: 1.5rem;">Please enter your name to continue</p>
+            <div class="space-y-4">
+                <div>
+                    <label class="label">Your Name</label>
+                    <input type="text" id="senderNameInput" class="input" placeholder="Enter your name" required>
+                </div>
+                <button onclick="saveSenderName()" class="btn btn-primary" style="width: 100%;">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="modal">
+        <div class="loading"></div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+        <!-- Header -->
+        <header style="background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;">
+            <div class="container" style="padding-top: 1rem; padding-bottom: 1rem;">
+                <div style="margin-bottom: 1rem;">
+                    <h1 style="font-size: 1.5rem; margin: 0;">Invoice Management System</h1>
+                    <p style="color: var(--muted-foreground); margin: 0;">Sender: <span id="currentSenderName"></span></p>
+                </div>
+                <div style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
+                    <button onclick="switchTab('create')" class="btn" id="tab-create">
+                        <span>📄</span> Create Invoice <span id="draftCount" class="badge badge-blue hidden"></span>
+                    </button>
+                    <button onclick="switchTab('sent')" class="btn" id="tab-sent">
+                        <span>📤</span> Sent Invoices <span id="sentCount" class="badge badge-green hidden"></span>
+                    </button>
+                    <button onclick="switchTab('in_process')" class="btn" id="tab-in_process">
+                        <span>⏱️</span> In Process <span id="processCount" class="badge badge-orange hidden"></span>
+                    </button>
+                    <button onclick="switchTab('completed')" class="btn" id="tab-completed">
+                        <span>✅</span> Completed <span id="completedCount" class="badge badge-blue hidden"></span>
+                    </button>
+                    <button onclick="switchTab('logs')" class="btn" id="tab-logs">
+                        <span>📚</span> Logs <span id="logsCount" class="badge badge-gray hidden"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+            <!-- Create Invoice Tab -->
+            <div id="content-create" class="tab-content hidden">
+                <div class="card">
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem;">
+                        <h2 style="margin: 0;" id="formTitle">Create New Invoice</h2>
+                        <button onclick="cancelEdit()" class="btn hidden" id="cancelEditBtn">
+                            <span>✖️</span> Cancel
+                        </button>
+                    </div>
+
+                    <form id="invoiceForm" class="space-y-6">
+                        <!-- Invoice Details -->
+                        <div>
+                            <h3 style="color: var(--muted-foreground); margin-bottom: 1rem;">Invoice Details</h3>
+                            <div class="grid grid-cols-3">
+                                <div>
+                                    <label class="label">Company</label>
+                                    <input type="text" name="company" class="input" required>
+                                </div>
+                                <div>
+                                    <label class="label">Invoice No</label>
+                                    <input type="text" name="invoiceNo" class="input" required>
+                                </div>
+                                <div>
+                                    <label class="label">Date</label>
+                                    <input type="date" name="date" class="input" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2" style="margin-top: 1.5rem;">
+                                <div>
+                                    <label class="label">Invoice Description</label>
+                                    <textarea name="invoiceDescription" class="textarea" rows="3"></textarea>
+                                </div>
+                                <div>
+                                    <label class="label">Additional Description</label>
+                                    <textarea name="additionalDescription" class="textarea" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3" style="margin-top: 1.5rem; padding: 1rem; background: #dbeafe; border-radius: var(--radius); border: 1px solid #3b82f6;">
+                                <div>
+                                    <label class="label">Tutar (Amount)</label>
+                                    <input type="number" step="0.01" name="invoiceDetailsAmount" id="invoiceDetailsAmount" class="input" value="0" oninput="calculateInvoiceDetails()">
+                                </div>
+                                <div>
+                                    <label class="label">KDV (20%)</label>
+                                    <input type="number" step="0.01" id="invoiceDetailsVat" class="input" readonly style="cursor: not-allowed; background: white;">
+                                </div>
+                                <div>
+                                    <label class="label">Toplam (Total)</label>
+                                    <input type="number" step="0.01" id="invoiceDetailsTotal" class="input" readonly style="cursor: not-allowed; background: white;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="separator"></div>
+
+                        <!-- Shipping Details -->
+                        <div>
+                            <h3 style="color: var(--muted-foreground); margin-bottom: 1rem;">Shipping Details</h3>
+                            <div class="grid grid-cols-2">
+                                <div>
+                                    <label class="label">Loading Company</label>
+                                    <input type="text" name="loadingCompany" class="input">
+                                </div>
+                                <div>
+                                    <label class="label">Loading Location</label>
+                                    <input type="text" name="loadingLocation" class="input">
+                                </div>
+                                <div>
+                                    <label class="label">Shipping Company</label>
+                                    <input type="text" name="shippingCompany" class="input">
+                                </div>
+                                <div>
+                                    <label class="label">Shipping Location</label>
+                                    <input type="text" name="shippingLocation" class="input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="separator"></div>
+
+                        <!-- Personnel & Supplier -->
+                        <div>
+                            <h3 style="color: var(--muted-foreground); margin-bottom: 1rem;">Personnel & Supplier</h3>
+                            <div class="grid grid-cols-3">
+                                <div>
+                                    <label class="label">Operator</label>
+                                    <input type="text" name="operator" class="input">
+                                </div>
+                                <div>
+                                    <label class="label">Sales Representative</label>
+                                    <input type="text" name="salesRepresentative" class="input">
+                                </div>
+                                <div>
+                                    <label class="label">Supplier</label>
+                                    <input type="text" name="supplier" class="input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="separator"></div>
+
+                        <!-- Line Items -->
+                        <div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                <h3 style="color: var(--muted-foreground); margin: 0;">Items</h3>
+                                <button type="button" onclick="addInvoiceItem()" class="btn">
+                                    <span>➕</span> Add Item
+                                </button>
+                            </div>
+                            <div id="invoiceItems"></div>
+                            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                                <div style="width: 100%; max-width: 24rem; padding: 1.5rem; background: #f9fafb; border-radius: var(--radius); border: 1px solid var(--border);">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                                        <span style="color: var(--muted-foreground);">Subtotal</span>
+                                        <span id="itemsSubtotal">$0.00</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                                        <span style="color: var(--muted-foreground);">VAT Total</span>
+                                        <span id="itemsVatTotal">$0.00</span>
+                                    </div>
+                                    <div class="separator"></div>
+                                    <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                                        <span>Grand Total</span>
+                                        <span id="itemsGrandTotal">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="separator"></div>
+
+                        <!-- Additional Information -->
+                        <div>
+                            <h3 style="color: var(--muted-foreground); margin-bottom: 1rem;">Additional Information</h3>
+                            <div class="grid grid-cols-2">
+                                <div>
+                                    <label class="label">License Plate</label>
+                                    <input type="text" name="licensePlate" class="input">
+                                </div>
+                                <div>
+                                    <label class="label">Contact</label>
+                                    <input type="text" name="contact" class="input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="separator"></div>
+
+                        <!-- Payment Information -->
+                        <div>
+                            <h3 style="color: var(--muted-foreground); margin-bottom: 1rem;">Payment Information</h3>
+                            <div class="grid grid-cols-3">
+                                <div>
+                                    <label class="label">Delivery</label>
+                                    <input type="text" name="delivery" class="input">
+                                </div>
+                                <div>
+                                    <label class="label">Payment Date</label>
+                                    <input type="date" name="paymentDate" class="input">
+                                </div>
+                                <div>
+                                    <label class="label">Payment</label>
+                                    <input type="text" name="payment" class="input">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-4" style="margin-top: 1.5rem; padding: 1rem; background: #d1fae5; border-radius: var(--radius); border: 1px solid #10b981;">
+                                <div>
+                                    <label class="label">Tutar (Amount)</label>
+                                    <input type="number" step="0.01" name="paymentAmount" id="paymentAmount" class="input" value="0" oninput="calculatePaymentDetails()">
+                                </div>
+                                <div>
+                                    <label class="label">KDV (20%)</label>
+                                    <input type="number" step="0.01" id="paymentVat" class="input" readonly style="cursor: not-allowed; background: white;">
+                                </div>
+                                <div>
+                                    <label class="label">Tevrikat</label>
+                                    <input type="number" step="0.01" id="paymentTevrikat" class="input" readonly style="cursor: not-allowed; background: white;">
+                                </div>
+                                <div>
+                                    <label class="label">Toplam (Total)</label>
+                                    <input type="number" step="0.01" id="paymentTotal" class="input" readonly style="cursor: not-allowed; background: white;">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3" style="margin-top: 1.5rem;">
+                                <div>
+                                    <label class="label">Status</label>
+                                    <select name="status" class="select">
+                                        <option value="draft">Draft</option>
+                                        <option value="sent">Sent</option>
+                                        <option value="in_process">In Process</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary" style="width: 100%; height: 3rem;">
+                            <span>💾</span> <span id="submitBtnText">Save Invoice</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Draft Invoices List -->
+                <div id="draftInvoicesList" class="hidden"></div>
+            </div>
+
+            <!-- Other Tabs Content -->
+            <div id="content-sent" class="tab-content hidden"></div>
+            <div id="content-in_process" class="tab-content hidden"></div>
+            <div id="content-completed" class="tab-content hidden"></div>
+            <div id="content-logs" class="tab-content hidden"></div>
+        </main>
+    </div>
+
+    <!-- Invoice Detail Modal -->
+    <div id="invoiceDetailModal" class="modal hidden">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">Invoice Details</h2>
+                <button onclick="closeInvoiceDetail()" class="btn">✖️ Close</button>
+            </div>
+            <div id="invoiceDetailContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://0ec90b57d6e95fcbda19832f.supabase.co/functions/v1/make-server-ec5ebf11';
+        const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJib2x0IiwicmVmIjoiMGVjOTBiNTdkNmU5NWZjYmRhMTk4MzJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4ODE1NzQsImV4cCI6MTc1ODg4MTU3NH0.9I8-U0x86Ak8t2DGaIk0HfvTSLsAyzdnz-Nw00mMkKw';
+
+        let currentSenderName = '';
+        let currentTab = 'create';
+        let invoices = [];
+        let editingInvoice = null;
+        let invoiceItems = [];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedName = localStorage.getItem('senderName');
+            if (savedName) {
+                currentSenderName = savedName;
+                document.getElementById('currentSenderName').textContent = savedName;
+                document.getElementById('nameSetupModal').classList.add('hidden');
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                loadInvoices();
+                switchTab('create');
+                initializeForm();
+            } else {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('nameSetupModal').classList.remove('hidden');
+            }
+
+            // Set default date
+            const dateInput = document.querySelector('input[name="date"]');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        });
+
+        function saveSenderName() {
+            const name = document.getElementById('senderNameInput').value.trim();
+            if (name) {
+                currentSenderName = name;
+                localStorage.setItem('senderName', name);
+                document.getElementById('currentSenderName').textContent = name;
+                document.getElementById('nameSetupModal').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                loadInvoices();
+                switchTab('create');
+                initializeForm();
+            } else {
+                alert('Please enter your name');
+            }
+        }
+
+        function initializeForm() {
+            addInvoiceItem();
+            addInvoiceItem();
+        }
+
+        async function loadInvoices() {
+            try {
+                const response = await fetch(`${API_URL}/invoices`, {
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`
+                    }
+                });
+                const data = await response.json();
+                invoices = data.invoices || [];
+                updateCounts();
+                renderCurrentTab();
+            } catch (error) {
+                console.error('Error loading invoices:', error);
+            }
+        }
+
+        function updateCounts() {
+            const draftCount = invoices.filter(inv => inv.status === 'draft').length;
+            const sentCount = invoices.filter(inv => inv.status === 'sent').length;
+            const processCount = invoices.filter(inv => inv.status === 'in_process').length;
+            const completedCount = invoices.filter(inv => inv.status === 'completed').length;
+            const logsCount = invoices.filter(inv => inv.status === 'logged').length;
+
+            updateCountBadge('draftCount', draftCount);
+            updateCountBadge('sentCount', sentCount);
+            updateCountBadge('processCount', processCount);
+            updateCountBadge('completedCount', completedCount);
+            updateCountBadge('logsCount', logsCount);
+        }
+
+        function updateCountBadge(id, count) {
+            const badge = document.getElementById(id);
+            if (count > 0) {
+                badge.textContent = count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            ['create', 'sent', 'in_process', 'completed', 'logs'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    btn.classList.add('tab-active');
+                } else {
+                    btn.classList.remove('tab-active');
+                }
+            });
+
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+
+            // Show current content
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+
+            renderCurrentTab();
+        }
+
+        function renderCurrentTab() {
+            if (currentTab === 'create') {
+                renderDraftsList();
+            } else if (currentTab === 'sent') {
+                renderInvoiceList('sent', 'Gönderilen Faturalar (Sent Invoices)');
+            } else if (currentTab === 'in_process') {
+                renderInvoiceList('in_process', 'Invoices In Process');
+            } else if (currentTab === 'completed') {
+                renderInvoiceList('completed', 'Completed Invoices');
+            } else if (currentTab === 'logs') {
+                renderLogsList();
+            }
+        }
+
+        function renderDraftsList() {
+            const draftInvoices = invoices.filter(inv => inv.status === 'draft');
+            const container = document.getElementById('draftInvoicesList');
+
+            if (draftInvoices.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            container.innerHTML = `
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Draft Invoices (${draftInvoices.length})</h3>
+                    ${draftInvoices.map(invoice => `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h4 style="margin: 0;">${invoice.invoiceNo} - ${invoice.company}</h4>
+                                    <p style="color: var(--muted-foreground); margin: 0.25rem 0 0 0;">${invoice.date}</p>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button onclick="editInvoice('${invoice.id}')" class="btn">✏️ Edit</button>
+                                    <button onclick="sendInvoice('${invoice.id}')" class="btn btn-primary">📤 Send</button>
+                                    <button onclick="deleteInvoice('${invoice.id}')" class="btn">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderInvoiceList(status, title) {
+            const filteredInvoices = invoices.filter(inv => inv.status === status);
+            const container = document.getElementById(`content-${status}`);
+
+            if (filteredInvoices.length === 0) {
+                container.innerHTML = `
+                    <h2>${title}</h2>
+                    <div class="card" style="text-align: center; padding: 3rem;">
+                        <p style="font-size: 3rem; margin: 0;">📄</p>
+                        <p style="color: var(--muted-foreground);">No invoices in this category</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const showFilters = status === 'in_process';
+
+            container.innerHTML = `
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                    <h2>${title} (${filteredInvoices.length})</h2>
+                </div>
+
+                ${filteredInvoices.map(invoice => {
+                    const statusBadge = getStatusBadge(invoice.status);
+
+                    if (status === 'sent') {
+                        return `
+                            <div class="card" style="cursor: pointer;" onclick="viewInvoiceDetail('${invoice.id}')">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                                        <div>
+                                            <div style="font-size: 0.875rem; color: var(--muted-foreground);">Gönderenin İsmi (Sender Name)</div>
+                                            <div>${invoice.senderName}</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.875rem; color: var(--muted-foreground);">Bugünün Tarihi (Date)</div>
+                                            <div>${formatDate(invoice.sentDate || invoice.createdAt)}</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.875rem; color: var(--muted-foreground);">Benzersiz ID (Unique ID)</div>
+                                            <div style="font-size: 0.75rem; font-family: monospace;">${invoice.id.substring(0, 20)}...</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.875rem; color: var(--muted-foreground);">Durum (Status)</div>
+                                            ${statusBadge}
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; margin-left: 1rem;">
+                                        <button onclick="event.stopPropagation(); viewInvoiceDetail('${invoice.id}')" class="btn">👁️ View</button>
+                                        <button onclick="event.stopPropagation(); changeInvoiceStatus('${invoice.id}', 'in_process')" class="btn">⏱️ Process</button>
+                                        <button onclick="event.stopPropagation(); editInvoice('${invoice.id}')" class="btn">✏️</button>
+                                        <button onclick="event.stopPropagation(); deleteInvoice('${invoice.id}')" class="btn">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="card">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <div>
+                                        <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                            ${invoice.invoiceNo}
+                                            ${statusBadge}
+                                        </h3>
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: var(--muted-foreground);">${invoice.date}</div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; padding: 1rem; background: #dbeafe; border-radius: var(--radius);">
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">Gönderenin İsmi</div>
+                                        <div>${invoice.senderName}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">Tarih</div>
+                                        <div>${formatDate(invoice.sentDate || invoice.createdAt)}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">Benzersiz ID</div>
+                                        <div style="font-size: 0.75rem; font-family: monospace;">${invoice.id.substring(0, 20)}...</div>
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">Company</div>
+                                        <div>${invoice.company}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">Contact</div>
+                                        <div>${invoice.contact || '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">License Plate</div>
+                                        <div>${invoice.licensePlate || '-'}</div>
+                                    </div>
+                                </div>
+
+                                <div style="border-top: 1px solid var(--border); padding-top: 1rem;">
+                                    <div style="margin-bottom: 1rem; font-size: 0.875rem;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span style="color: var(--muted-foreground);">Total:</span>
+                                            <span>$${(invoice.total || 0).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                        <button onclick="viewInvoiceDetail('${invoice.id}')" class="btn">👁️ View Details</button>
+                                        ${status === 'completed' ? `<button onclick="approveInvoice('${invoice.id}')" class="btn btn-primary" style="background: #10b981;">✅ Onayla (Approve)</button>` : ''}
+                                        ${status === 'in_process' ? `<button onclick="changeInvoiceStatus('${invoice.id}', 'completed')" class="btn">✅ Mark Completed</button>` : ''}
+                                        <button onclick="editInvoice('${invoice.id}')" class="btn">✏️ Edit</button>
+                                        <button onclick="deleteInvoice('${invoice.id}')" class="btn">🗑️ Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }).join('')}
+            `;
+        }
+
+        function renderLogsList() {
+            const loggedInvoices = invoices.filter(inv => inv.status === 'logged');
+            const container = document.getElementById('content-logs');
+
+            if (loggedInvoices.length === 0) {
+                container.innerHTML = `
+                    <h2>Logs</h2>
+                    <div class="card" style="text-align: center; padding: 3rem;">
+                        <p style="font-size: 3rem; margin: 0;">📚</p>
+                        <p style="color: var(--muted-foreground);">No logged invoices</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <h2>Logs (${loggedInvoices.length})</h2>
+                ${loggedInvoices.map(invoice => `
+                    <div class="card" style="cursor: pointer;" onclick="viewInvoiceDetail('${invoice.id}')">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <h3 style="margin: 0;">Invoice #${invoice.invoiceNo}</h3>
+                                ${getStatusBadge(invoice.status)}
+                            </div>
+                            <button onclick="event.stopPropagation(); viewInvoiceDetail('${invoice.id}')" class="btn">👁️ View Full Details</button>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; padding: 1rem; background: #f9fafb; border-radius: var(--radius);">
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Oluşturan (Creator)</div>
+                                <div>${invoice.creator || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Gönderen (Sender)</div>
+                                <div>${invoice.sender || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">In Process'e Atan</div>
+                                <div>${invoice.processor || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Completed Yapan</div>
+                                <div>${invoice.completer || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Loglayan</div>
+                                <div>${invoice.logger || '-'}</div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Company</div>
+                                <div>${invoice.company}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Date</div>
+                                <div>${invoice.date}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Total</div>
+                                <div>$${(invoice.total || 0).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function getStatusBadge(status) {
+            switch (status) {
+                case 'sent':
+                    return '<span class="badge badge-green">🟢 Sent</span>';
+                case 'in_process':
+                    return '<span class="badge badge-orange">🟠 In Process</span>';
+                case 'completed':
+                    return '<span class="badge badge-blue">🔵 Completed</span>';
+                case 'logged':
+                    return '<span class="badge badge-gray">📚 Logged</span>';
+                default:
+                    return `<span class="badge">${status}</span>`;
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        // Invoice Items Management
+        function addInvoiceItem() {
+            const container = document.getElementById('invoiceItems');
+            const index = invoiceItems.length;
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'invoice-item-row';
+            itemDiv.dataset.index = index;
+            itemDiv.innerHTML = `
+                <div>
+                    <label class="label">Description</label>
+                    <input type="text" class="input item-description" placeholder="Item description">
+                </div>
+                <div>
+                    <label class="label">Price</label>
+                    <input type="number" step="0.01" class="input item-price" placeholder="0.00" value="0" oninput="updateItemCalculations(${index})">
+                </div>
+                <div>
+                    <label class="label">VAT (20%)</label>
+                    <input type="number" step="0.01" class="input item-vat" readonly style="cursor: not-allowed; background: white;">
+                </div>
+                <div>
+                    <label class="label">Total</label>
+                    <input type="number" step="0.01" class="input item-total" readonly style="cursor: not-allowed; background: white;">
+                </div>
+                <div>
+                    <button type="button" onclick="removeInvoiceItem(${index})" class="btn btn-icon" style="color: #ef4444;">🗑️</button>
+                </div>
+            `;
+
+            container.appendChild(itemDiv);
+            invoiceItems.push({ description: '', price: 0, vat: 0, total: 0 });
+        }
+
+        function removeInvoiceItem(index) {
+            if (invoiceItems.length <= 1) return;
+
+            const container = document.getElementById('invoiceItems');
+            const itemDiv = container.querySelector(`[data-index="${index}"]`);
+            if (itemDiv) {
+                itemDiv.remove();
+                invoiceItems.splice(index, 1);
+                updateItemsTotals();
+            }
+        }
+
+        function updateItemCalculations(index) {
+            const container = document.getElementById('invoiceItems');
+            const itemDiv = container.querySelector(`[data-index="${index}"]`);
+            if (!itemDiv) return;
+
+            const price = parseFloat(itemDiv.querySelector('.item-price').value) || 0;
+            const vat = price * 0.2;
+            const total = price + vat;
+
+            itemDiv.querySelector('.item-vat').value = vat.toFixed(2);
+            itemDiv.querySelector('.item-total').value = total.toFixed(2);
+
+            invoiceItems[index] = {
+                description: itemDiv.querySelector('.item-description').value,
+                price: parseFloat(price.toFixed(2)),
+                vat: parseFloat(vat.toFixed(2)),
+                total: parseFloat(total.toFixed(2))
+            };
+
+            updateItemsTotals();
+        }
+
+        function updateItemsTotals() {
+            const subtotal = invoiceItems.reduce((sum, item) => sum + item.price, 0);
+            const vatTotal = invoiceItems.reduce((sum, item) => sum + item.vat, 0);
+            const total = subtotal + vatTotal;
+
+            document.getElementById('itemsSubtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('itemsVatTotal').textContent = `$${vatTotal.toFixed(2)}`;
+            document.getElementById('itemsGrandTotal').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function calculateInvoiceDetails() {
+            const amount = parseFloat(document.getElementById('invoiceDetailsAmount').value) || 0;
+            const vat = amount * 0.2;
+            const total = amount + vat;
+
+            document.getElementById('invoiceDetailsVat').value = vat.toFixed(2);
+            document.getElementById('invoiceDetailsTotal').value = total.toFixed(2);
+        }
+
+        function calculatePaymentDetails() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value) || 0;
+            const vat = amount * 0.2;
+            const tevrikat = amount * 0.2;
+            const total = amount + vat - tevrikat;
+
+            document.getElementById('paymentVat').value = vat.toFixed(2);
+            document.getElementById('paymentTevrikat').value = tevrikat.toFixed(2);
+            document.getElementById('paymentTotal').value = total.toFixed(2);
+        }
+
+        // Form submission
+        document.getElementById('invoiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // Collect items data
+            const items = [];
+            const container = document.getElementById('invoiceItems');
+            container.querySelectorAll('.invoice-item-row').forEach((itemDiv, index) => {
+                items.push({
+                    description: itemDiv.querySelector('.item-description').value,
+                    price: parseFloat(itemDiv.querySelector('.item-price').value) || 0,
+                    vat: parseFloat(itemDiv.querySelector('.item-vat').value) || 0,
+                    total: parseFloat(itemDiv.querySelector('.item-total').value) || 0
+                });
+            });
+
+            const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+            const vatTotal = items.reduce((sum, item) => sum + item.vat, 0);
+            const total = subtotal + vatTotal;
+
+            const invoiceData = {
+                ...data,
+                senderName: currentSenderName,
+                items,
+                subtotal: parseFloat(subtotal.toFixed(2)),
+                vatTotal: parseFloat(vatTotal.toFixed(2)),
+                total: parseFloat(total.toFixed(2)),
+                invoiceDetailsAmount: parseFloat(data.invoiceDetailsAmount),
+                invoiceDetailsVat: parseFloat(document.getElementById('invoiceDetailsVat').value),
+                invoiceDetailsTotal: parseFloat(document.getElementById('invoiceDetailsTotal').value),
+                paymentAmount: parseFloat(data.paymentAmount),
+                paymentVat: parseFloat(document.getElementById('paymentVat').value),
+                paymentTevrikat: parseFloat(document.getElementById('paymentTevrikat').value),
+                paymentTotal: parseFloat(document.getElementById('paymentTotal').value),
+            };
+
+            try {
+                if (editingInvoice) {
+                    await updateInvoice(editingInvoice.id, invoiceData);
+                } else {
+                    invoiceData.creator = currentSenderName;
+                    await createInvoice(invoiceData);
+                }
+
+                e.target.reset();
+                document.getElementById('invoiceItems').innerHTML = '';
+                invoiceItems = [];
+                addInvoiceItem();
+                addInvoiceItem();
+                calculateInvoiceDetails();
+                calculatePaymentDetails();
+
+                cancelEdit();
+                await loadInvoices();
+            } catch (error) {
+                alert('Error saving invoice: ' + error.message);
+            }
+        });
+
+        async function createInvoice(data) {
+            const response = await fetch(`${API_URL}/invoices`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) throw new Error('Failed to create invoice');
+            return response.json();
+        }
+
+        async function updateInvoice(id, data) {
+            const response = await fetch(`${API_URL}/invoices/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) throw new Error('Failed to update invoice');
+            return response.json();
+        }
+
+        async function deleteInvoice(id) {
+            if (!confirm('Are you sure you want to delete this invoice?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/invoices/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete invoice');
+                await loadInvoices();
+            } catch (error) {
+                alert('Error deleting invoice: ' + error.message);
+            }
+        }
+
+        function editInvoice(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if (!invoice) return;
+
+            editingInvoice = invoice;
+
+            // Populate form
+            const form = document.getElementById('invoiceForm');
+            Object.keys(invoice).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) input.value = invoice[key] || '';
+            });
+
+            // Populate invoice details
+            document.getElementById('invoiceDetailsAmount').value = invoice.invoiceDetailsAmount || 0;
+            calculateInvoiceDetails();
+
+            // Populate payment details
+            document.getElementById('paymentAmount').value = invoice.paymentAmount || 0;
+            calculatePaymentDetails();
+
+            // Populate items
+            document.getElementById('invoiceItems').innerHTML = '';
+            invoiceItems = [];
+
+            if (invoice.items && invoice.items.length > 0) {
+                invoice.items.forEach(item => {
+                    addInvoiceItem();
+                    const index = invoiceItems.length - 1;
+                    const container = document.getElementById('invoiceItems');
+                    const itemDiv = container.querySelector(`[data-index="${index}"]`);
+
+                    itemDiv.querySelector('.item-description').value = item.description;
+                    itemDiv.querySelector('.item-price').value = item.price;
+                    itemDiv.querySelector('.item-vat').value = item.vat;
+                    itemDiv.querySelector('.item-total').value = item.total;
+
+                    invoiceItems[index] = item;
+                });
+            } else {
+                addInvoiceItem();
+                addInvoiceItem();
+            }
+
+            updateItemsTotals();
+
+            // Update UI
+            document.getElementById('formTitle').textContent = 'Edit Invoice';
+            document.getElementById('submitBtnText').textContent = 'Update Invoice';
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+            switchTab('create');
+            window.scrollTo(0, 0);
+        }
+
+        function cancelEdit() {
+            editingInvoice = null;
+            document.getElementById('formTitle').textContent = 'Create New Invoice';
+            document.getElementById('submitBtnText').textContent = 'Save Invoice';
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+            document.getElementById('invoiceForm').reset();
+
+            // Reset date to today
+            const dateInput = document.querySelector('input[name="date"]');
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        async function sendInvoice(id) {
+            await changeInvoiceStatus(id, 'sent');
+        }
+
+        async function changeInvoiceStatus(id, newStatus) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if (!invoice) return;
+
+            const updateData = { ...invoice, status: newStatus };
+
+            if (newStatus === 'sent' && !invoice.sentDate) {
+                updateData.sentDate = new Date().toISOString();
+                updateData.sender = currentSenderName;
+            } else if (newStatus === 'in_process' && !invoice.processDate) {
+                updateData.processDate = new Date().toISOString();
+                updateData.processor = currentSenderName;
+            } else if (newStatus === 'completed' && !invoice.completedDate) {
+                updateData.completedDate = new Date().toISOString();
+                updateData.completer = currentSenderName;
+            }
+
+            try {
+                await updateInvoice(id, updateData);
+                await loadInvoices();
+            } catch (error) {
+                alert('Error updating invoice status: ' + error.message);
+            }
+        }
+
+        async function approveInvoice(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if (!invoice) return;
+
+            const updateData = {
+                ...invoice,
+                status: 'logged',
+                approvedDate: new Date().toISOString(),
+                logger: currentSenderName
+            };
+
+            try {
+                await updateInvoice(id, updateData);
+                await loadInvoices();
+                switchTab('logs');
+            } catch (error) {
+                alert('Error approving invoice: ' + error.message);
+            }
+        }
+
+        function viewInvoiceDetail(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if (!invoice) return;
+
+            const content = document.getElementById('invoiceDetailContent');
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">Invoice Information</h3>
+                        <div class="grid grid-cols-3">
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Invoice No</div>
+                                <div>${invoice.invoiceNo}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Company</div>
+                                <div>${invoice.company}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Date</div>
+                                <div>${invoice.date}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${invoice.invoiceDescription || invoice.additionalDescription ? `
+                        <div class="separator"></div>
+                        <div>
+                            <h3 style="margin-bottom: 1rem;">Descriptions</h3>
+                            ${invoice.invoiceDescription ? `
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="font-size: 0.875rem; color: var(--muted-foreground);">Invoice Description</div>
+                                    <div>${invoice.invoiceDescription}</div>
+                                </div>
+                            ` : ''}
+                            ${invoice.additionalDescription ? `
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--muted-foreground);">Additional Description</div>
+                                    <div>${invoice.additionalDescription}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    <div class="separator"></div>
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">Invoice Details Amounts</h3>
+                        <div class="grid grid-cols-3">
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Amount</div>
+                                <div>$${(invoice.invoiceDetailsAmount || 0).toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">VAT (20%)</div>
+                                <div>$${(invoice.invoiceDetailsVat || 0).toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Total</div>
+                                <div>$${(invoice.invoiceDetailsTotal || 0).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="separator"></div>
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">Shipping Details</h3>
+                        <div class="grid grid-cols-2">
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Loading Company</div>
+                                <div>${invoice.loadingCompany || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Loading Location</div>
+                                <div>${invoice.loadingLocation || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Shipping Company</div>
+                                <div>${invoice.shippingCompany || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Shipping Location</div>
+                                <div>${invoice.shippingLocation || '-'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="separator"></div>
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">Personnel & Supplier</h3>
+                        <div class="grid grid-cols-3">
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Operator</div>
+                                <div>${invoice.operator || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Sales Representative</div>
+                                <div>${invoice.salesRepresentative || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Supplier</div>
+                                <div>${invoice.supplier || '-'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${invoice.items && invoice.items.length > 0 ? `
+                        <div class="separator"></div>
+                        <div>
+                            <h3 style="margin-bottom: 1rem;">Line Items</h3>
+                            ${invoice.items.map(item => `
+                                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem; padding: 0.75rem; background: #f9fafb; border-radius: var(--radius);">
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">Description</div>
+                                        <div>${item.description}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">Price</div>
+                                        <div>$${item.price.toFixed(2)}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">VAT</div>
+                                        <div>$${item.vat.toFixed(2)}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">Total</div>
+                                        <div>$${item.total.toFixed(2)}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <div style="text-align: right; padding: 1rem; background: #f9fafb; border-radius: var(--radius); margin-top: 1rem;">
+                                <div style="margin-bottom: 0.5rem;">
+                                    <span style="color: var(--muted-foreground);">Subtotal:</span>
+                                    <span style="font-weight: 600; margin-left: 1rem;">$${(invoice.subtotal || 0).toFixed(2)}</span>
+                                </div>
+                                <div style="margin-bottom: 0.5rem;">
+                                    <span style="color: var(--muted-foreground);">VAT Total:</span>
+                                    <span style="font-weight: 600; margin-left: 1rem;">$${(invoice.vatTotal || 0).toFixed(2)}</span>
+                                </div>
+                                <div style="font-size: 1.25rem;">
+                                    <span style="font-weight: 600;">Grand Total:</span>
+                                    <span style="font-weight: 600; margin-left: 1rem;">$${(invoice.total || 0).toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="separator"></div>
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">Additional Information</h3>
+                        <div class="grid grid-cols-2">
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">License Plate</div>
+                                <div>${invoice.licensePlate || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Contact</div>
+                                <div>${invoice.contact || '-'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="separator"></div>
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">Payment Information</h3>
+                        <div class="grid grid-cols-3" style="margin-bottom: 1rem;">
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Delivery</div>
+                                <div>${invoice.delivery || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Payment Date</div>
+                                <div>${invoice.paymentDate || '-'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Payment Method</div>
+                                <div>${invoice.payment || '-'}</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4">
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Amount</div>
+                                <div>$${(invoice.paymentAmount || 0).toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">VAT</div>
+                                <div>$${(invoice.paymentVat || 0).toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Tevrikat</div>
+                                <div>$${(invoice.paymentTevrikat || 0).toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.875rem; color: var(--muted-foreground);">Total</div>
+                                <div>$${(invoice.paymentTotal || 0).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${invoice.status === 'logged' ? `
+                        <div class="separator"></div>
+                        <div>
+                            <h3 style="margin-bottom: 1rem;">Audit Trail</h3>
+                            <div class="grid grid-cols-2">
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--muted-foreground);">Created By</div>
+                                    <div>${invoice.creator || '-'}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--muted-foreground);">Sent By</div>
+                                    <div>${invoice.sender || '-'}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--muted-foreground);">Processed By</div>
+                                    <div>${invoice.processor || '-'}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--muted-foreground);">Completed By</div>
+                                    <div>${invoice.completer || '-'}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--muted-foreground);">Logged By</div>
+                                    <div>${invoice.logger || '-'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('invoiceDetailModal').classList.remove('hidden');
+        }
+
+        function closeInvoiceDetail() {
+            document.getElementById('invoiceDetailModal').classList.add('hidden');
+        }
+
+        // Auto-refresh every 3 seconds
+        setInterval(() => {
+            if (currentSenderName) {
+                loadInvoices();
+            }
+        }, 3000);
+    </script>
+</body>
 </html>
